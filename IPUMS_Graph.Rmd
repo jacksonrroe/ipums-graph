@@ -1,0 +1,43 @@
+---
+title: "IPUMS_Graph"
+author: "Jackson Roe"
+date: '2022-06-29'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggthemes)
+library(ipumsr)
+library(dplyr)
+source(file = "usa_00001.R")
+```
+
+```{r}
+data |> 
+  select(INCTOT,EMPSTAT) |> 
+  mutate(incstat = as.integer(INCTOT), 
+         empstat = as.factor(EMPSTAT)) |>
+  mutate(empstat = case_when(empstat == 0 ~ "NA", 
+                             empstat == 1 ~ "Employed",
+                             empstat == 2 ~ "Unemployed", 
+                             empstat == 3 ~ "Not in Labor Force")) |>
+  mutate(INCTOT = na_if(incstat, "9999999")) |> 
+  mutate(INCTOT = INCTOT / 100000) |> 
+  ggplot(aes(x = INCTOT, 
+             y = ..scaled.., 
+             fill = empstat, 
+             color = empstat)) + 
+    geom_density(alpha = 0.3, na.rm = TRUE) + 
+    xlim(0,8) + 
+    scale_y_continuous(labels = scales::label_number()) + 
+    scale_fill_discrete(name = "Employment Status") + 
+    scale_color_discrete(name = "Employment Status") + 
+    theme_economist(dkpanel = TRUE) + 
+    labs(title = "2019 Income Distribution by Employment Status", x = " ",
+         y = " ",
+         caption = "Income: Values Scaled by 1/100000")
+```
+
+
